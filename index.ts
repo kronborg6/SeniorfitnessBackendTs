@@ -1,15 +1,29 @@
-import express, {Express, Request, Response} from 'express';
-import dotenv from 'dotenv';
+import express from 'express';
+// import dotenv from 'dotenv';
+// import cookieParser from 'cookie-parser';
+import cookieParser from "cookie-parser";
+import cors from 'cors';
 
-dotenv.config();
+// import router from './src/router/auth.router';
+import {routes} from './src/router/auth.router';
+// import { createConnection } from 'net';
 
-const app: Express = express();
-const port = 3001;
+// createConnection
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Ts er bere ind js');
-});
 
-app.listen(port, () => {
-  console.log(`⚡️[server]: Server is running at https://localhost:${port}`)
+const app = express();
+
+app.use(express.json());
+app.use(cookieParser());
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:8080', 'http://localhost:4200', '*'],
+  credentials: true
+}));
+
+routes(app);
+
+// app.use('/', router)
+
+app.listen(8000, () => {
+  console.log('listening to port 8000')
 })
