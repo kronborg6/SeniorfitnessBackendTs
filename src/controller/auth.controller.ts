@@ -38,7 +38,7 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
     const {email, password} = req.body;
     try {
-        console.log("login")
+        // console.log("login")
         const user = await prisma.userInfo.findUnique({
             where: {
                 email: email
@@ -116,10 +116,10 @@ export const authenticatedUser = async (req: Request, res: Response) => {
 
         const {password, ...data} = user;
         // const {...data} = user;
-        console.log(data)
+        // console.log(data)
 
         res.status(200).send(data);
-        console.log("refresh v2")
+        // console.log("refresh v2")
     } catch (err) {
         // console.log("lort på lort")
         return res.status(401).send({
@@ -143,7 +143,7 @@ export const refresh = async (req: Request, res: Response) => {
         const dateNow = new Date();
         dateNow.setDate(dateNow.getDate());
 
-        // console.log(payload.id)
+        console.log(payload.id)
 
         const dbToken = await prisma.token.findUnique({
             where: {
@@ -153,7 +153,7 @@ export const refresh = async (req: Request, res: Response) => {
                 // }
             }
         });
-        // console.log(dbToken)
+        console.log(dbToken)
 
         if (!dbToken) {
             return res.status(401).send({
