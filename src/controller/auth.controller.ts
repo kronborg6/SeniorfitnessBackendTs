@@ -2,7 +2,6 @@ import { Request, response, Response } from "express";
 import {sign, verify} from 'jsonwebtoken';
 import bcryptjs from 'bcryptjs';
 import {PrismaClient} from '@prisma/client';
-import { clearScreenDown } from "readline";
 
 const prisma = new PrismaClient();
 
@@ -10,6 +9,7 @@ export const register = async (req: Request, res: Response) => {
     const {email, password, fristname, lastname} = req.body;
 
     try {
+        // console.log("lort op l")
 
         const user = await prisma.userInfo.create({
             data: {
@@ -18,9 +18,15 @@ export const register = async (req: Request, res: Response) => {
                 lastName: lastname,
                 password: await bcryptjs.hash(password, 12),
                 role: {
-                    connect: {
-                        id: 1,
-                    }
+                    connectOrCreate: {
+                        where: {
+                            id: 1
+                        },
+                        create: {
+                            id: 1,
+                            name: 'User'
+                        },
+                    },
                 },
             }
         });
@@ -28,7 +34,7 @@ export const register = async (req: Request, res: Response) => {
             user
         })
     } catch (err) {
-        console.dir(err)
+        // console.dir(err)
         res.status(404).send({
             message: 'i just dont give a fuck'
         })
@@ -85,12 +91,13 @@ export const login = async (req: Request, res: Response) => {
         token
     })
     } catch (err) {
-        console.dir(err)
+        // console.dir(err)
     }
 };
 
 export const authenticatedUser = async (req: Request, res: Response) => {
     try {
+        console.log("oliver")
         const accessToken = req.header('Authorization')?.split(" ")[1] || "";
 
         const payload: any = verify(accessToken, 'access_secret');
@@ -119,9 +126,9 @@ export const authenticatedUser = async (req: Request, res: Response) => {
         // console.log(data)
 
         res.status(200).send(data);
-        // console.log("refresh v2")
+        console.log("refresh v2")
     } catch (err) {
-        // console.log("lort på lort")
+        console.log("lort på lort")
         return res.status(401).send({
             message: 'unauthenticated'
         });
@@ -143,17 +150,17 @@ export const refresh = async (req: Request, res: Response) => {
         const dateNow = new Date();
         dateNow.setDate(dateNow.getDate());
 
-        console.log(payload.id)
+        // console.log(payload.id)
 
-        const dbToken = await prisma.token.findUnique({
+        const dbToken = await prisma.token.findFirst({
             where: {
                 id: payload.id,
-                // expiredAt: {
-                //     gt: dateNow
-                // }
+                expiredAt: {
+                    gt: dateNow
+                }
             }
         });
-        console.log(dbToken)
+        // console.log(dbToken)
 
         if (!dbToken) {
             return res.status(401).send({
@@ -177,8 +184,6 @@ export const logout = async (req: Request, res: Response) => {
     try {
         const refreshToken = req.cookies['refreshToken'];
 
-        console.log(refreshToken)
-        console.log("first")
 
         await prisma.token.deleteMany({
             where: {
@@ -187,6 +192,8 @@ export const logout = async (req: Request, res: Response) => {
           })
 
           res.cookie('refreshToken', '', {maxAge: 0});
+
+    // console.log("logout")
 
           res.send({
             message: 'success'

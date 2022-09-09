@@ -22,7 +22,8 @@ model UserInfo {
   fristName String
   lastName String
   password String
-  plan Int?
+  plan Priceing? @relation(fields: [planId], references: [id])
+  planId Int?
   role Role @relation(fields: [roleId], references: [id])
   roleId Int
   token Token[]
@@ -36,6 +37,8 @@ model Priceing {
   team Boolean?
   takeAFreind Boolean?
   bodyTracking Boolean?
+  user UserInfo[]
+
 }
 
 model Token {
@@ -45,4 +48,12 @@ model Token {
   token String
   createdAt DateTime @default(now())
   expiredAt DateTime
+}
+
+model Udstyr {
+  id Int @id @default(autoincrement())
+  name String
+  class String?
+  maxWeigt Int
+  HowMany Int
 }

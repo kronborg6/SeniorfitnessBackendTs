@@ -6,6 +6,8 @@ import cors from 'cors';
 
 // import router from './src/router/auth.router';
 import {routes} from './src/router/auth.router';
+import {eRouter} from './src/router/fitnessudstyr.router';
+import {uRouter} from './src/router/user.router';
 // import { createConnection } from 'net';
 
 // createConnection
@@ -16,11 +18,14 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:8080', 'http://localhost:4200', '*'],
-  credentials: true
+  origin: ['http://localhost:3000', '*'],
+  credentials: true,
 }));
-
+eRouter(app);
 routes(app);
+uRouter(app);
+app.set("trust proxy", 1);
+
 
 // app.use('/', router)
 
