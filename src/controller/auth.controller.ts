@@ -5,6 +5,51 @@ import {PrismaClient} from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+export const newLogin = async (req: Request, res: Response) => {
+    const {passwordb, email} = req.body;
+    try {
+        console.log("gggggg")
+
+        const user = await prisma.userInfo.findUnique({ 
+            where: {
+                email: email
+            },
+            include: {
+                role: true
+            }
+        });
+        if (!user) {
+            return res.status(400).send({
+                message: 'Invalid credentials'
+            });
+        }
+        if (!await bcryptjs.compare(passwordb, user.password)) {
+            return res.status(400).send({
+                message: 'Invalid credentials'
+            })
+        }
+        // Check the plain password aginst the stored hash password in the db if it a match
+        //its send a bearer token and a user back
+
+        const {password, ...data} = user;
+
+        const token = sign({id: user.id}, "refresh_secret", {expiresIn: '1d'})
+
+        res.status(200).send({
+            token,
+            data
+        })
+
+        } catch (err) {
+            // console.log(err)
+            res.status(400).send({
+                message: 'Login faild'
+            })
+        }
+    
+}
+
+
 export const register = async (req: Request, res: Response) => {
     const {email, password, fristname, lastname} = req.body;
 
@@ -44,7 +89,7 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
     const {email, password} = req.body;
     try {
-        // console.log("login")
+        console.log("login")
         const user = await prisma.userInfo.findUnique({
             where: {
                 email: email
@@ -97,13 +142,17 @@ export const login = async (req: Request, res: Response) => {
 
 export const authenticatedUser = async (req: Request, res: Response) => {
     try {
-        console.log("oliver")
+        // console.log("oliver")
         const accessToken = req.header('Authorization')?.split(" ")[1] || "";
+        
+
+        console.log('AccessToken ' + accessToken)
 
         const payload: any = verify(accessToken, 'access_secret');
-        // console.log(payload)
+        console.log('user payload ' + payload)
 
         if (!payload) {
+            console.log("Token lort")
             return res.status(401).send({
                 message: 'unauthenticated Payload'
             });
@@ -123,12 +172,12 @@ export const authenticatedUser = async (req: Request, res: Response) => {
 
         const {password, ...data} = user;
         // const {...data} = user;
-        // console.log(data)
+        console.log(data)
 
-        res.status(200).send(data);
+        res.status(200).send({data});
         console.log("refresh v2")
     } catch (err) {
-        console.log("lort på lort")
+        // console.log(err)
         return res.status(401).send({
             message: 'unauthenticated'
         });
@@ -139,7 +188,10 @@ export const refresh = async (req: Request, res: Response) => {
     try {
         const refreshToken = req.cookies['refreshToken'];
 
+        console.log('refresh token ' + refreshToken)
         const payload: any = verify(refreshToken, "refresh_secret");
+
+
 
         if (!payload) {
             return res.status(401).send({

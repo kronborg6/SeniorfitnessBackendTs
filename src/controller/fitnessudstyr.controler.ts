@@ -15,7 +15,8 @@ export const equipment = async (req: Request, res: Response) => {
                 message: 'can\'t find equiment'
             })
         }
-        res.status(200).send({
+        console.log(equipment)
+        res.send({
             equipment
         })
     } catch (err) {
